@@ -98,7 +98,11 @@ for iteration in range(n_iterations):
         eta=0.1  # Increase eta for more exploration
     )
 
-    # Optimize the acquisition function
+    # Optimize the acquisition function: 
+    # obtain new candidate to explore
+    # and see how big the acq value is (bigger is better, meaning that my candidate point 
+    # will tell me the most about the blackbox function; either has found a very likely
+    # extreme or it will explore a very dark area)
     new_in_points, acq_value = optimize_acqf(
         acq_function=qEHVI,
         bounds=torch.stack([torch.zeros(2, dtype=dtype, device=device), torch.ones(2, dtype=dtype, device=device)]),
