@@ -75,7 +75,7 @@ for iteration in range(n_iterations):
 
     # Since calculating EHVI involves estimating expected values over uncertain outcomes (usually calcing an integral), 
     # this sampler helps to approximate these expectations via Quasi-Monte Carlo (QMC) sampling.
-    # Analytical solutions for these expectations are typically infeasible, so QMC sampling 
+    # Analytical solutions for these expectations  (integrals) are typically infeasible, so QMC sampling 
     # provides an efficient and accurate approximation.
     # Create the SobolQMCNormalSampler with the correct sample_shape and optional seed
     sampler = SobolQMCNormalSampler(sample_shape=torch.Size([128]), seed=iteration)
