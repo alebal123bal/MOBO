@@ -1,4 +1,4 @@
 MOBO.py
 MOBO_utils.py
 constrained_multi_objective_bo.py
-.pyc
+*.pyc

@@ -42,11 +42,11 @@ my_out_points = objective(my_in_points)
 # Define model
 def initialize_model(in_points, out_points):
     # Normalize inputs
-    train_x_normalized = normalize(in_points, bounds=bounds)
+    in_points_normalized = normalize(in_points, bounds=bounds)
     # Define models for each objective
     models = []
     for i in range(out_points.shape[-1]):
-        models.append(SingleTaskGP(train_x_normalized, out_points[..., i:i+1], likelihood=None))
+        models.append(SingleTaskGP(in_points_normalized, out_points[..., i:i+1], likelihood=None))
     model = ModelListGP(*models)
     mll = SumMarginalLogLikelihood(model.likelihood, model)
     return mll, model
