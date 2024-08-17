@@ -61,7 +61,8 @@ ax_3d = fig.add_subplot(111, projection='3d')
 # Optimization loop
 n_iterations = 20
 for iteration in range(n_iterations):
-    # Basically, if the MLL is low, it suggests the model isn't fitting the data well, so we might "smell a rat."
+    # Basically, if the MLL is low, it suggests the model isn't fitting the data well,
+    # so we might "smell a rat."
     # Fit the model
     fit_gpytorch_mll(mll, options={"disp": False})
 
@@ -70,7 +71,10 @@ for iteration in range(n_iterations):
     worst_observed_values = torch.min(my_out_points, dim=0).values
     ref_point = worst_observed_values - 0.1  # Keep ref_point as a tensor
 
-    # Define the acquisition function
+    # Create a partitioning of the objective space using the reference point and observed outcomes.
+    # This is used to efficiently calculate the hypervolume for multi-objective optimization
+    # and to find dominated (all points are worse than some point on the Pareto front )
+    # and non dominated regions (the good region)
     partitioning = FastNondominatedPartitioning(ref_point=ref_point, Y=my_out_points)
 
     # Since calculating EHVI involves estimating expected values over uncertain outcomes (usually calcing an integral), 
@@ -104,7 +108,7 @@ for iteration in range(n_iterations):
         options={"maxiter": 1000, "disp": False}
     )
 
-    # Unnormalize the new point
+    # Unnormalize the new point to correctly calc the objective outputs
     new_in_points = unnormalize(new_in_points, bounds=bounds)
 
     # Evaluate the new point
