@@ -61,19 +61,27 @@ ax_3d = fig.add_subplot(111, projection='3d')
 # Optimization loop
 n_iterations = 20
 for iteration in range(n_iterations):
+    # Basically, if the MLL is low, it suggests the model isn't fitting the data well, so we might "smell a rat."
     # Fit the model
     fit_gpytorch_mll(mll, options={"disp": False})
 
     # Dynamically estimate the reference point based on the worst observed values
+    # (worst ==> we are minimizing the objectives)
     worst_observed_values = torch.min(my_out_points, dim=0).values
     ref_point = worst_observed_values - 0.1  # Keep ref_point as a tensor
 
     # Define the acquisition function
     partitioning = FastNondominatedPartitioning(ref_point=ref_point, Y=my_out_points)
-    
+
+    # Since calculating EHVI involves estimating expected values over uncertain outcomes (usually calcing an integral), 
+    # this sampler helps to approximate these expectations via Quasi-Monte Carlo (QMC) sampling.
+    # Analytical solutions for these expectations are typically infeasible, so QMC sampling 
+    # provides an efficient and accurate approximation.
     # Create the SobolQMCNormalSampler with the correct sample_shape and optional seed
     sampler = SobolQMCNormalSampler(sample_shape=torch.Size([128]), seed=iteration)
 
+    # This acquisition function aims to improve one objective function without deteriorating the others
+    # i.e. it tries to expand the Pareto frontier finding a better tradeoff between the 3 objective functions
     # Ensure there are no pending points (X_pending), and use default eta
     qEHVI = qExpectedHypervolumeImprovement(
         model=model,
@@ -113,7 +121,7 @@ for iteration in range(n_iterations):
     print(f"Iteration {iteration + 1}:")
     print(f"  New input point: {new_in_points.squeeze().tolist()}")
     print(f"  New objectives (negated): {new_out_points.squeeze().tolist()}")
-    print(f"  Acquisition function value: {acq_value.item()}")
+    print(f"  Acquisition function value: {acq_value.item()}")  # This aims to be as big as possible
 
     # Plotting the current Pareto front
     ax_3d.clear()
