@@ -16,16 +16,16 @@ torch.manual_seed(42)
 
 # Define the objective functions (negated for minimization)
 def objective(X):
-    # (x - 3)**2 + 1 has a inf sets of minimums at (3.0, _any_)
+    # (x - 3)**2 + 1 has infinite sets of minima at (3.0, _any_)
     f1 = ((X[:, 0] - 3)**2 + 1)
     
     # x**2 + y**2 has a unique minimum at (0, 0)
     f2 = (X[:, 0]**2 + X[:, 1]**2)
 
-    # sqrt(|x + y + 1|) has a inf sets of minimums where x + y = -1
+    # sqrt(|x + y + 1|) has infinite sets of minima where x + y = -1
     f3 = torch.sqrt(torch.abs(X[:, 0] + X[:, 1] + 1))
 
-    #Negate functions for minimization problem
+    # Negate functions for minimization problem
     return torch.stack([-f1, -f2, -f3], dim=-1)
 
 # Set up the optimization
@@ -53,10 +53,6 @@ def initialize_model(in_points, out_points):
 
 mll, model = initialize_model(my_in_points, my_out_points)
 
-# Define reference point for hypervolume calculation
-# Adjusted reference point considering all three objectives
-ref_point = torch.tensor([-3.0, -3.0, -2.0], dtype=dtype, device=device)
-
 # Plotting setup
 plt.ion()
 fig = plt.figure(figsize=(8, 6))
@@ -68,6 +64,10 @@ for iteration in range(n_iterations):
     # Fit the model
     fit_gpytorch_mll(mll, options={"disp": False})
 
+    # Dynamically estimate the reference point based on the worst observed values
+    worst_observed_values = torch.min(my_out_points, dim=0).values
+    ref_point = worst_observed_values - 0.1  # Keep ref_point as a tensor
+
     # Define the acquisition function
     partitioning = FastNondominatedPartitioning(ref_point=ref_point, Y=my_out_points)
     
@@ -77,7 +77,7 @@ for iteration in range(n_iterations):
     # Ensure there are no pending points (X_pending), and use default eta
     qEHVI = qExpectedHypervolumeImprovement(
         model=model,
-        ref_point=ref_point.tolist(),  # Ensure the ref_point is a list, as per the docstring
+        ref_point=ref_point,  # Use the dynamically estimated reference point as a tensor
         partitioning=partitioning,
         sampler=sampler,  # Use the correctly defined SobolQMCNormalSampler here
         objective=None,  # Default to IdentityMCMultiOutputObjective
