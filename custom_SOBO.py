@@ -1,6 +1,6 @@
 """
 Example: find minimum of x**2 + y**2 using Bayesian Optimization.\n
-Dominium is defined as [-SIDE, SIDE][-SIDE, SIDE] and the solution will be x = y = 0.\n
+Dominium is defined as [-SIDE, SIDE][-SIDE, SIDE] and the solution will be x = y = 3.\n
 """
 
 import torch
